@@ -7,6 +7,6 @@
 5. Unzip the source code to a folder called 'watermark' on your Desktop
 6. Open Git Bash
 7. In Git Bash, use the `cd` (change directory) command to navigate the terminal the newly created folder `watermark`
-8. When in the `watermark` folder, run `npm run start`
+8. When in the `watermark` folder, run `npm install` then `npm run start`
 
 The program should create an image `testOutput`. If it does the program works.
