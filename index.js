@@ -2,33 +2,69 @@ const gm = require("gm")
 const fs = require("fs")
 const path = require("path")
 const promisify = require("util").promisify
+const dfilename = require("debug")("africaboyz.filename")
+const dfilesize = require("debug")("africaboyz.filesize")
+const doffsets = require("debug")("africaboyz.offsets")
 
 const readDir = promisify(fs.readdir)
-// read files
 
-readDir(path.join(__dirname, "images/sparesboyz_images"))
-  .then((data) => {
-    const images = data
-      .filter((fileName) => typeof fileName === "string")
-      .filter((fileName) => fileName.toLowerCase().endsWith(".jpg"))
+function getOffsets(bW, bH, wW, wH) {
+  return {
+    x: bW > wW ? (bW - wW) / 2 : 0,
+    y: bH > wH ? (bH - wH) / 2 : 0
+  }
+}
 
-    // image manip
-    images.forEach((fileName) => {
-      gm()
-        .in("-page", "+0+0")
-        .gravity("Center")
-        .in(`images/sparesboyz_images/${fileName}`)
-        .in("images/slanted.png")
-        .mosaic()
-        .write(`watermarked_${fileName}.jpg`, function(err) {
-          if (err) throw err
-        })
+new Promise(function(resolve, reject) {
+  gm("images/slanted.png").size(function(err, val) {
+    if (err) reject(err)
+
+    resolve({
+      width: val.width,
+      height: val.height
     })
   })
-  .catch((err) => {
-    console.error(`Something bad happened: ${err}`)
+})
+  .then(function(watermark) {
+    readDir(path.join(__dirname, "images/sparesboyz_images"))
+      .then(function(data) {
+        const images = data
+          .filter((fileName) => typeof fileName === "string")
+          .filter((fileName) => fileName.toLowerCase().endsWith(".jpg"))
+
+        images.forEach(function(fileName) {
+          dfilename(fileName)
+
+          gm(`images/sparesboyz_images/${fileName}`).size(function(err, image) {
+            if (err) throw err
+            dfilesize(image)
+
+            var offsets = getOffsets(
+              image.width,
+              image.height,
+              watermark.width,
+              watermark.height
+            )
+
+            doffsets(offsets)
+
+            gm()
+              .in(`images/sparesboyz_images/${fileName}`)
+              .in("-page", `+${offsets.x}+${offsets.y}`)
+              .in("images/slanted.png")
+              .mosaic()
+              .write(`${fileName}_watermarked.jpg`, function(err) {
+                if (err) throw err
+              })
+          })
+        })
+      })
+      .catch(function(err) {
+        console.error(`Something bad happened: ${err}`)
+        throw err
+      })
   })
-
-// for each file, run the gm functions
-
-// write multiple files
+  .catch(function(err) {
+    console.error(err)
+    throw err
+  })
