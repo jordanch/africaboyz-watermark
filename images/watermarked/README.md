@@ -1,0 +1,1 @@
+Watermarked images will be saved in this folder.

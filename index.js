@@ -26,7 +26,7 @@ new Promise(function(resolve, reject) {
   })
 })
   .then(function(watermark) {
-    readDir(path.join(__dirname, "images/sparesboyz_images"))
+    readDir(path.join(__dirname, "images/africaboyzonline_original_images"))
       .then(function(data) {
         const images = data
           .filter((fileName) => typeof fileName === "string")
@@ -35,28 +35,33 @@ new Promise(function(resolve, reject) {
         images.forEach(function(fileName) {
           dfilename(fileName)
 
-          gm(`images/sparesboyz_images/${fileName}`).size(function(err, image) {
-            if (err) throw err
-            dfilesize(image)
+          gm(`images/africaboyzonline_original_images/${fileName}`).size(
+            function(err, image) {
+              if (err) throw err
+              dfilesize(image)
 
-            var offsets = getOffsets(
-              image.width,
-              image.height,
-              watermark.width,
-              watermark.height
-            )
+              var offsets = getOffsets(
+                image.width,
+                image.height,
+                watermark.width,
+                watermark.height
+              )
 
-            doffsets(offsets)
+              doffsets(offsets)
 
-            gm()
-              .in(`images/sparesboyz_images/${fileName}`)
-              .in("-page", `+${offsets.x}+${offsets.y}`)
-              .in("images/slanted.png")
-              .mosaic()
-              .write(`${fileName}_watermarked.jpg`, function(err) {
-                if (err) throw err
-              })
-          })
+              gm()
+                .in(`images/africaboyzonline_original_images/${fileName}`)
+                .in("-page", `+${offsets.x}+${offsets.y}`)
+                .in("images/slanted.png")
+                .mosaic()
+                .write(
+                  `images/watermarked/${fileName}_watermarked.jpg`,
+                  function(err) {
+                    if (err) throw err
+                  }
+                )
+            }
+          )
         })
       })
       .catch(function(err) {
